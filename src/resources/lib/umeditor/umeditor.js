@@ -7235,8 +7235,6 @@ UM.plugins['basestyle'] = function(){
                     rng.insertNode(node).setStart(node,0).setCursor(false);
                     return true;
                 }else{
-                	//不知道算不算bug,在该项目中取消上标和下标样式必须执行多一次document.execCommand。
-                	if(!this.document.queryCommandState(cmdName))this.document.execCommand(cmdName);
                     return this.document.execCommand(cmdName)
                 }
 

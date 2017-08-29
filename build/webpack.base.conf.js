@@ -9,7 +9,7 @@ function resolve(dir){
 
 module.exports = {
 	entry:{
-		app:'./index.jsx'
+		app:['babel-polyfill','./index.jsx']
 	},
 	output:{
 		filename:'[name].js',
@@ -35,15 +35,15 @@ module.exports = {
 	},
 	module:{
 	  rules:[
-		{
-			test:/\.js$/,
-			loader:'babel-loader',
-			exclude:[resolve('node_modules')],
-		},
+		// {
+		// 	test:/\.js$/,
+		// 	loader:'babel-loader',
+		// 	exclude:[resolve('node_modules')],
+		// },
 		{
 			test:/\.js|jsx$/,
 			loader:'babel-loader',
-			exclude:[resolve('node_modules')],
+			exclude:[resolve('node_modules'),resolve('src/resources')],
 
 		},
 		{

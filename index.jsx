@@ -8,7 +8,6 @@ import {hashHistory} from 'react-router'
 window.$ = $;
 window.jquery = $;
 window.jQuery = $;
-console.log(hashHistory);
 
 const routes = [
 	{
