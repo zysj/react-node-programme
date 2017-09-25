@@ -1,6 +1,12 @@
 
 
-function Flow(el,array){
+var lessIE11 = document.documentMode &&  document.documentMode<11;		//ie版本是否小于11
+var lessIE9 = document.documentMode && document.documentMode<9;			//ie版本是否小于9
+
+function WaterFlow(el,array){
+	if(this instanceof WaterFlow !== true){
+		return new WaterFlow(el,array);
+	}
 	this.len,				//每行子元素数量
 	this.oldlen,			//每行子元素数量旧值
 	this.children,		//子元素数组
@@ -15,7 +21,7 @@ function Flow(el,array){
 	this.isLoad = false;			//控制首次加载时不会运行两次initFlow函数。
 	this.init();
 }
-Flow.prototype.init = function(){
+WaterFlow.prototype.init = function(){
 	var that = this;
 	this.children = this.$el.children();
 	this.cwidth = this.children.outerWidth();
@@ -32,7 +38,7 @@ Flow.prototype.init = function(){
 	});
 }
 
-Flow.prototype.initFlow = function(binding){
+WaterFlow.prototype.initFlow = function(binding){
 	var that = this;
 	that.pwidth = that.$el.outerWidth();
 	// console.log(this.$el[0].getBoundingClientRect());
@@ -79,8 +85,11 @@ Flow.prototype.initFlow = function(binding){
 		var img = self.find('.flow-img')[0];
 		var selfRow = Math.ceil(index/that.len);
 		self.width(that.cwidth);
-		if(!img.complete){
+		if(img['complete'] === undefined || !img['complete']){
 			img.onload = function(){
+				if(lessIE11){
+					self.height(adjustImg(img,that.cwidth));
+				}
 				if(that.imgcount == that.children.length-1){
 					that.$el.height(that.getParentHeight());
 				}
@@ -99,12 +108,33 @@ Flow.prototype.initFlow = function(binding){
 	});
 
 	//if(that.$el.outerHeight()==0 || that.imgcount == that.children.length || that.oldlen != that.len){
-	that.$el.height(that.getParentHeight());
+	if(!lessIE11){
+		that.$el.height(that.getParentHeight());
+	}
 	//}
 	//that.oldlen = that.len;
 }
+/**
+ * 用于调整图片的宽高，应用于ie浏览器
+ */
+function adjustImg(img,pwidth){
+	var width = 0,
+		height = 0;
+	if(lessIE9){
+		var image = new Image();
+		image.src= img.href;
+		width = image.width;
+		height = image.height;
+	}else{
+		width = img.naturalWidth;
+		height = img.naturalHeight;
+	}
+	var adjustHeight = pwidth*height/width;
+	$(img).height(adjustHeight);
+	return adjustHeight;
+}
 
-Flow.prototype.getParentHeight = function(){
+WaterFlow.prototype.getParentHeight = function(){
 	var lastCount = this.alen%this.len;
 	if(lastCount == 0){
 		lastCount = this.len;
@@ -117,7 +147,7 @@ Flow.prototype.getParentHeight = function(){
 	}
 	return maxHeight;
 }
-Flow.prototype.getTop = function(index){
+WaterFlow.prototype.getTop = function(index){
 	var preTop = 0;
 	var prev = $(this.children[index-this.len]);
 	if(index <this.len){
@@ -128,7 +158,7 @@ Flow.prototype.getTop = function(index){
 	return preTop+preHeight+this.minspace;
 }
 
-Flow.prototype.getLeft = function(index){
+WaterFlow.prototype.getLeft = function(index){
 	var preLeft = 0;
 	var prev = $(this.children[index-1]);
 	var llen = index%this.len;
@@ -141,4 +171,4 @@ Flow.prototype.getLeft = function(index){
 	return preLeft+this.cwidth+left;
 }
 
-export default Flow;
+export default WaterFlow;

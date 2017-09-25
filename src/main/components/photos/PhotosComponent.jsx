@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Flow from 'src/main/common/utils/rankFlow.js'
+import WaterFlow from 'src/main/common/utils/WaterFlow.js'
 
 class PhotosComponent extends React.Component{
 	constructor(props){
@@ -9,7 +9,7 @@ class PhotosComponent extends React.Component{
 	}
 
 	componentDidMount(){
-		new Flow(this.wrap,this.imgs);
+		WaterFlow(this.wrap,this.imgs);
 	}
 
 	render(){
