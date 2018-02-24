@@ -1,7 +1,7 @@
 ##ignore this file##
 /node_modules/
 /src/bundle/
-/require-gulp-test/ 
+/require-gulp-test/node_modules/ 
 .classpath
 .project
 .settings      

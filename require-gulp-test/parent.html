@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html lang="zh">
+    <head>
+        <base>
+        <title>requirejs与gulp测试</title>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <div>
+            <iframe src=''></iframe>
+        </div>
+    </body>
+    <!-- <script type="text/javascript">
+    </script> -->
+    <!-- <script id="mainJs" type="text/javascript"></script> -->
+    <script id="jsroot" type="text/javascript">
+        var script = document.createElement('script');
+            script.setAttribute('data-main','index.js');
+            script.setAttribute('src','require.js');
+            script.setAttribute('type','text/javascript');
+            script.setAttribute('id','mainJs');
+            document.body.append(script);
+        setTimeout(function(){
+            if(document.getElementById('mainJs')){
+                var jsroot = document.getElementById('jsroot');
+                document.body.removeChild(jsroot);
+            }
+        },500);
+    </script>
+</html>

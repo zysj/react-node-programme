@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>子页面</title>    
+    </head>
+    <body>
+        <div>
+            子页面
+        </div>
+    </body>
+    <script type="text/javascript">
+        // setTimeout(function(){
+            window.require = window.top.require;
+            window.define = window.top.define;
+            //console.log(window,window.top);
+            require(['jquery','testutil'],function(jquery,testutil){
+                console.log(jquery,testutil);
+            })
+        // },50)
+    </script>
+</html>
