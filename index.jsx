@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import $ from 'jquery'
 import {Router, Route, Link} from 'react-router'
 import {hashHistory} from 'react-router'
+import 'src/resources/css/base.css'
 
 //初始化jquery
 window.$ = $;

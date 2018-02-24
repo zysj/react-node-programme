@@ -1,9 +1,11 @@
 ##ignore this file##
-/node_modules/ 
+/node_modules/
+/src/bundle/
+/require-gulp-test/ 
 .classpath
 .project
 .settings      
- ##filter databfile¡¢sln file##
+ ##filter databfileï¿½ï¿½sln file##
 *.mdb  
 *.ldb  
 *.sln    

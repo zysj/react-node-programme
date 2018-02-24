@@ -3,7 +3,7 @@ var path = require('path');
 module.exports = {
 	build:{
 		env:require('./prod.env'),
-		index:path.resolve(__dirname, '../rindex.html'),
+		index:path.resolve(__dirname, '../src/bundle/index.html'),
 		assetsRoot: path.resolve(__dirname, '../'),
 		assetsSubDirectory: 'src/bundle',
 		assetsPublicPath: '../',
@@ -17,7 +17,7 @@ module.exports = {
 
 	dev:{
 		env: require('./dev.env'),
-		port: 9090,
+		port: 2020,
 		atuoOpenBrower: true,
 		assetsSubDirectory: '/',
 		assetsPublicPath:'',
