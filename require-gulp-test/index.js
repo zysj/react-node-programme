@@ -3,15 +3,25 @@ require.config({
     baseUrl:'./js',
     paths:{
         'jquery':'jquery.min',
-        'testutil':'testutil'
+        'testutil':'testutil',
+        'umeditor':'umeditor/umeditor',
+        'umeditorConfig':'umeditorConfig',
+        'template':'umeditor/third-party/template.min',
+        'umeditorZh':'umeditor/lang/zh-cn/zh-cn',
+        'validateUtil':'../validateUtil'
     },
     shim:{
         'testutil':{
             deps:['jquery']
+        },
+        'umeditor':{
+            deps:['jquery']
+        },
+        'umeditorZh':{
+            deps:['umeditor']
         }
     },
 });
 require(['jquery','testutil'],function(jquery,testutil){
-    console.log(jquery,testutil);
     $('iframe').attr('src','./child.html');
 })
