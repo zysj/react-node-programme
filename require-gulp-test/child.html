@@ -3,20 +3,398 @@
     <head>
         <meta charset="UTF-8"/>
         <title>子页面</title>    
+        <link rel="stylesheet" href="js/layui/css/layui.css"/>
+        <link rel="stylesheet" href="js/umeditor/themes/default/css/umeditor.min.css"/>
+        <style type="text/css">
+            .search-input{position: absolute;overflow:auto;display: none;height:auto;box-shadow: 0px 1px 2px 1px rgba(0,0,0,0.1);z-index:1000;background-color: #fff}
+            .search-input>.no-search-data{padding:10px;text-align: center;cursor: not-allowed;color:#aaa;position: relative;z-index:1000}
+            .search-input>.load-more-data{padding:10px;text-align: center;color:#888;cursor:pointer;position: relative;z-index:1000}
+            .search-input>.load-more-data:hover{color:#333}
+            .search-input>.search-backdrop{position: fixed;top:0px;left:0px;width:100%;height:100%;z-index:999}
+            .search-input>ul{list-style: none;margin:0px;padding:0px;position: relative;z-index:1000}
+            .search-input>ul>li{padding:10px;border-bottom:1px solid #ddd;cursor:pointer;text-align: center}
+            .search-input>ul>li:hover{background-color: #eee}
+        </style>
     </head>
     <body>
         <div>
             子页面
         </div>
+        <div id="view" class="layui-form">
+
+        </div>
+        <script type="text/plain" id="editor" style="width:400px;height:500px"></script>
     </body>
+    <script id="listdemo" type="text/html">
+        <!-- <h3>{{ d.title }}</h3>
+        <ul>
+        {{#  layui.each(d.list, function(index, item){ }}
+        <li>
+            <span>{{ item.modname }}</span>
+            <span>{{ item.alias }}：</span>
+            <span>{{ item.site || '' }}</span>
+        </li>
+        {{#  }); }}
+        
+        {{#  if(d.list.length === 0){ }}
+        无数据
+        {{#  } }} 
+        </ul> -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">输入框</label>
+            <div class="layui-input-block">
+                <input type="text" name="" required input-search lay-filter="testinput" placeholder="请输入" autocomplete="off" class="layui-input">
+                <!-- <div class="search-input">
+                    <ul class="search-results">
+                        <li><span>aaaaa<span></li>
+                        <li><span>bbbbbb<span></li>
+                    </ul>
+                    <div class="no-search-data"><i></i><span>暂无数据</span></div>
+                </div> -->
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">开关-默认关</label>
+            <div class="layui-input-block">
+                <input type="checkbox" name="close" lay-skin="switch" lay-filter="switchTest" lay-text="ON|OFF">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">开关-默认关</label>
+            <div class="layui-input-block">
+                <select name="city" lay-verify="" lay-filter="selecttest" lay-search>
+                    <option value="010">layer</option>
+                    <option value="021">form</option>
+                    <option value="0571" selected>layim</option>
+                </select>    
+            </div>
+        </div>
+        <div>
+        </div>
+        <!-- <div class="layui-carousel" id="test1">
+            <div carousel-item>
+            {{#  layui.each(d.list, function(index, item){ }}
+              <div>{{item.modname}}</div>
+            {{#  }); }}
+            </div>
+        </div> -->
+    </script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/umeditor/third-party/template.min.js"></script>
+    <script type="text/javascript" src="js/umeditorConfig.js"></script>
+    <script type="text/javascript" src="js/umeditor/umeditor.js"></script>
+    <script type="text/javascript" src="js/umeditor/lang/zh-cn/zh-cn.js"></script>
+    <script type="text/javascript" src="js/layui/layui.js"></script>
     <script type="text/javascript">
         // setTimeout(function(){
             window.require = window.top.require;
             window.define = window.top.define;
-            //console.log(window,window.top);
-            require(['jquery','testutil'],function(jquery,testutil){
-                console.log(jquery,testutil);
-            })
+
+
+            var defaults = SearchInput.prototype.defaults = {
+                el:null,
+                data:[],
+                isIndex:true,
+                listFieldName:'text',
+                paramFieldName:'name',
+                successCb:null,
+                errorCb:null,
+                dataType:'json',
+                maxHeight:200,
+                selectCd:null,
+                noMoreDataFn:noMoreDataFn,
+                toggleClass:null,
+                acync:false,
+                param:{
+                    pageSize:0,
+                    pageNo:0,
+                    total:0
+                }
+            }
+
+            function noMoreDataFn(data){
+                if(Math.ceil(data.total/data.pageSize)<=data.pageNo){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            function SearchInput(option){
+                if(this instanceof SearchInput !== true){
+                    return new SearchInput(option);
+                }
+                this.option = $.extend({},defaults,option);
+                this.param = this.option.param||defaults.param;
+                this.$el = this.option.el || $('[input-search]');
+                this.data = this.option.data;
+                this.$panel = null;
+                this.$list = null;
+                this.$noDataTip = null;
+                this.$moreData = null;
+                this.$backdrop = null;
+                this.$parent = this.$el.parent();
+                this.init();
+            }
+
+            SearchInput.prototype.init = function(){
+                this.createPanel();
+                this.$panel = this.$el.siblings('.search-input').css(this.getPosition());
+                this.$list = this.$panel.find('.search-results');
+                this.$noDataTip = this.$panel.find('.no-search-data');
+                this.$backdrop = this.$panel.find('.search-backdrop');
+                this.$moreData = this.$panel.find('.load-more-data');
+                this.initPanelEvent();
+                this.initListEvent();
+            }
+            
+            SearchInput.prototype.getPosition = function(){
+                this.$parent.css('position','relative');
+                var marginTop = parseInt(this.$el.css('margin-top'));
+                var top = this.$el.offset().top;
+                top -= this.$parent.offset().top;
+                top += this.$el.outerHeight();
+                var width = this.$el.outerWidth();
+                console.log(this.$el.offset().top,this.$parent.offset().top);
+                return {
+                    top:top,
+                    width:width,
+                    'max-height':this.option.maxHeight
+                }
+            }
+
+            SearchInput.prototype.createPanel = function(){
+                var hasData = this.data && !!this.data.length;
+                var html = '<div class="search-input"><div class="search-backdrop"></div><ul class="search-results" '+ (!hasData ? 'style="display:none"' : '') +'>';
+                if(hasData){
+                    html += this.createResult();
+                }
+                html += '</ul><div class="no-search-data"'+ (hasData ? 'style="display:none"': '')+'><i></i><span>暂无数据</span></div><div class="load-more-data" '+ (!hasData || !this.option.acync ? 'style="display:none"': '')+'><i></i><span>加载更多</span></div></div>';
+                
+                this.$parent.append($(html));
+            }
+
+            SearchInput.prototype.createResult = function(data){
+                data = data || this.data;
+                if(!data || data instanceof Array !== true || !data.length)return '';
+                var html = '',name = this.option.listFieldName;
+                for(var i = 0,len = data.length;i<len;i++){
+                    html += "<li><span>" + (this.option.isIndex ? data[i] : data[i][name]) + "</span></li>";
+                }
+                return html;
+            }
+            
+            SearchInput.prototype.initPanelEvent = function(){
+                var that = this;
+                var toggleClass = that.option.toggleClass;
+                this.$el.on('focus',function(e){
+                    var event = e || window.event;
+                    event.stopPropagation();
+                    toggleClass ? that.$panel.addClass(toggleClass) : that.$panel.show();
+                });
+                
+                this.$el.on('keyup',function(e){
+                    var val = $(this).val();
+                    var param = {};
+                    param[that.option.paramFieldName] = val;
+                    that.search(param);
+                })
+
+                this.$backdrop.on('click',function(e){
+                    toggleClass ? that.$panel.removeClass(toggleClass) : that.$panel.hide();
+                });
+
+                this.$moreData.on('click',function(e){
+                    var val = $(this).val();
+                    var param = {};
+                    param[that.option.paramFieldName] = val;
+                    that.search(param);
+                });
+            }
+
+            SearchInput.prototype.search = function(param){
+                var that = this;
+                var option = this.option;
+                var url = option.url;
+                var param = $.extend(this.param,param);
+                $.post(url,param,option.dataType).done(function(data,textStatus,jqXHR){
+                    that.packParam(data);
+                    that.add(data);
+                    that.toggleTip(data);
+                    option.successCb && option.successCb.apply(that,Array.prototype.slice.call(arguments));
+                }).fail(function(){
+                    that.packParam(data);
+                    that.add([]);
+                    that.toggleTip(data);
+                    option.errorCb && option.errorCb.call(that,Array.prototype.slice.call(arguments));
+                });
+            }
+
+            SearchInput.prototype.packParam = function(res){
+                var param = this.param;
+                for(var i in param){
+                    if(res[i])param[i] = res[i];
+                }
+            }
+            
+            SearchInput.prototype.toggleTip = function(result){
+                var noMoreDataFn = this.option.noMoreDataFn;
+                var res = noMoreDataFn(result);
+                this.toggleTipFn(res);
+            }
+
+            SearchInput.prototype.toggleTipFn = function(flag){
+                if(flag){
+                    this.$noDataTip.show();
+                    this.$moreData.hide();
+                }else{
+                    this.$noDataTip.hide();
+                    this.$moreData.show();
+                }
+            }
+
+            SearchInput.prototype.initListEvent = function(){
+                var $li = this.$list.find('li');
+                $li.off('click').on('click',this.select());
+            }
+            
+            SearchInput.prototype.select = function(){
+                var that = this;
+                return function(e){
+                    var children = this.children || this.childNodes;
+                    var value = children[0].textContent;
+                    that.$el.val(value);
+                    that.option.selectCd && that.option.selectCd.call(that,value);
+                    that.$panel.hide();
+                }
+            }
+
+            SearchInput.prototype.refresh = function(data){
+                if(!data || data.length<1)return;
+                this.data = data;
+                var html = this.createResult(data);
+                this.$ul.show().html(html);
+                this.initListEvent();
+                if(!this.option.acync){
+                    this.data && this.data.length ? this.$noDataTip.hide() :this.$noDataTip.show();
+                }
+            }
+
+            SearchInput.prototype.add = function(data){
+                if(!data || data.length<1)return;
+                this.data = this.data.concat(data);
+                var html = this.createResult(data);
+                this.$list.show().append($(html));
+                this.initListEvent();
+                if(!this.option.acync){
+                    this.data && this.data.length ? this.$noDataTip.hide() :this.$noDataTip.show();
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            require(['jquery','testutil','umeditorConfig','umeditor'],function(jquery,testutil,umeditorConfig){
+                // window.UM = window.top.UM;
+                console.log(UM,$);
+                layui.use(['carousel','laytpl','form','layer'], function(){
+                    console.log($('#editor'));
+                    var editor =UM.getEditor('editor',umeditorConfig);
+                    //  editor.render($('#editor')[0]);
+                    console.log(editor,window);
+                    var carousel = layui.carousel;
+                    var layer = layui.layer;
+                    var form = layui.form;
+                    form.on('input(testinput)',function(data){
+                        console.log(data);
+                    })
+                    form.on('select(selecttest)',function(data,item){
+                        console.log(data);
+                    })
+                    //监听指定开关
+                    form.on('switch(switchTest)', function(data){
+                        layer.msg('开关checked：'+ (this.checked ? 'true' : 'false'), {
+                        offset: '6px'
+                        });
+                        layer.tips('温馨提示：请注意开关状态的文字可以随意定义，而不仅仅是ON|OFF', data.othis)
+                    });
+                    //建造实例
+                    var laytpl = layui.laytpl;
+                    var getTpl = document.getElementById('listdemo').innerHTML
+                        ,view = document.getElementById('view');
+                    laytpl(getTpl).render({list:[]}, function(html){
+                        view.innerHTML = html;
+                        carousel.render({
+                            elem: '#test1'
+                            ,width: '100%' //设置容器宽度
+                            ,arrow: 'always' //始终显示箭头
+                            //,anim: 'updown' //切换动画方式
+                        });
+                        form.render();
+                        // console.log($('select[name="city"]',document).next('div').find('input'));
+                        $('select[name="city"]',document).next('div').find('input').on('keyup',function(){
+                            console.log(this);
+                            form.render();
+                        })
+                        var search =  SearchInput();
+                        search.add(['a','b','c','d']);
+                    });
+
+                    // setTimeout(() => {
+                    //     data.list = data.list.slice(1);
+                    //     laytpl(getTpl).render(data, function(html){
+                    //         console.log(html);
+                    //         view.innerHTML = html;
+                    //         carousel.render({
+                    //             elem: '#test1'
+                    //             ,width: '100%' //设置容器宽度
+                    //             ,arrow: 'always' //始终显示箭头
+                    //             //,anim: 'updown' //切换动画方式
+                    //         });
+                    //         console.log($('#test1',document));
+                    //     });
+                    // }, 2000);
+                });
+            });
+            var data = {
+                "title": "Layui常用模块"
+                ,"list": [
+                    {
+                    "modname": "弹层"
+                    ,"alias": "layer"
+                    ,"site": "layer.layui.com"
+                    }
+                    ,{
+                    "modname": "表单"
+                    ,"alias": "form"
+                    }
+                    ,{
+                    "modname": "分页"
+                    ,"alias": "laypage"
+                    }
+                    ,{
+                    "modname": "日期"
+                    ,"alias": "laydate"
+                    }
+                    ,{
+                    "modname": "上传"
+                    ,"alias": "upload"
+                    }
+                ]
+            }
         // },50)
     </script>
 </html>
